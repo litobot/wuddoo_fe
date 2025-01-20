@@ -1,59 +1,11 @@
-version: 2.1
-
-executors:
-  node-executor:
-    docker:
-      - image: cimg/node:22.11-browsers # Node.js image with browsers for Cypress
-    working_directory: ~/project
-
-jobs:
-  install_dependencies:
-    executor: node-executor
-    steps:
-      - checkout
-      - run:
-          name: Install Dependencies
-          command: npm ci # Use `npm ci` for clean installs in CI environments
-      - persist_to_workspace:
-          root: ~/project
-          paths:
-            - node_modules
-
+version: 2.1 # Use 2.1 to make use of orbs and other features
+orbs: # An orb is a reusable package of CircleCI configuration that you may share
+  # across projects, enabling you to create encapsulated, parameterized commands, jobs, and
+  # executors that can be used across multiple projects.
+  cypress: cypress-io/cypress@3.1.1
+workflows: # Workflows are a declarative way to orchestrate jobs and their run order.
   build:
-    executor: node-executor
-    steps:
-      - attach_workspace:
-          at: ~/project
-      - checkout
-      - run:
-          name: Build the Next.js Application
-          command: npm run build
-      - persist_to_workspace:
-          root: ~/project
-          paths:
-            - .next # Persist the Next.js build folder for testing
-
-  test:
-    executor: node-executor
-    steps:
-      - attach_workspace:
-          at: ~/project
-      - checkout
-      - run:
-          name: Install Cypress Dependencies
-          command: npm install # Ensure Cypress is installed for the test step
-      - run:
-          name: Run Cypress Tests
-          command: npx cypress run
-
-workflows:
-  version: 2
-  ci_pipeline:
     jobs:
-      - install_dependencies
-      - build:
-          requires:
-            - install_dependencies
-      - test:
-          requires:
-            - build
+      - cypress/run: # Run the cypress/run job from the cypress orb
+          cypress-command: npx cypress run --headless # Run the cypress run command in headless mode
+          start-command: npm run dev
