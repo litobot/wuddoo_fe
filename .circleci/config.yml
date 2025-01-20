@@ -14,14 +14,22 @@ jobs:
       - run:
           name: Install Dependencies
           command: npm ci
+      - run:
+          name: List Installed Node Modules
+          command: ls node_modules
 
-  build:
+  start_dev_server:
     executor: node-executor
     steps:
       - checkout
       - run:
-          name: Build the Next.js Application
-          command: npm run build
+          name: Install Dependencies
+          command: npm ci
+      - run:
+          name: Start Dev Server
+          command: npm run dev
+          environment:
+            NODE_ENV: development
 
   test:
     executor: node-executor
@@ -36,9 +44,9 @@ workflows:
   ci_pipeline:
     jobs:
       - install_dependencies
-      - build:
+      - start_dev_server:
           requires:
             - install_dependencies
       - test:
           requires:
-            - build
+            - start_dev_server
