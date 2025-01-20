@@ -14,9 +14,6 @@ jobs:
       - run:
           name: Install Dependencies
           command: npm ci
-      - run:
-          name: List Installed Node Modules
-          command: ls node_modules
 
   start_dev_server:
     executor: node-executor
@@ -27,9 +24,14 @@ jobs:
           command: npm ci
       - run:
           name: Start Dev Server
-          command: npm run dev
-          environment:
-            NODE_ENV: development
+          command: npm run dev &
+      - run:
+          name: Wait for Dev Server to Start
+          command: |
+            until curl -s http://localhost:3000 > /dev/null; do
+              echo "Waiting for server to start..."
+              sleep 2
+            done
 
   test:
     executor: node-executor
