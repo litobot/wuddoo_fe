@@ -3,7 +3,7 @@ version: 2.1
 executors:
   node-executor:
     docker:
-      - image: cimg/node:22.11-browsers # Use a Node.js image suitable for your Next.js version
+      - image: cimg/node:22.11-browsers # Node.js image with browsers for Cypress
     working_directory: ~/project
 
 jobs:
@@ -13,23 +13,35 @@ jobs:
       - checkout
       - run:
           name: Install Dependencies
-          command: npm install
+          command: npm ci # Use `npm ci` for clean installs in CI environments
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - node_modules
 
   build:
     executor: node-executor
     steps:
+      - attach_workspace:
+          at: ~/project
       - checkout
       - run:
           name: Build the Next.js Application
           command: npm run build
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - .next # Persist the Next.js build folder for testing
 
   test:
     executor: node-executor
     steps:
+      - attach_workspace:
+          at: ~/project
       - checkout
       - run:
-          name: Install Dependencies
-          command: npm install
+          name: Install Cypress Dependencies
+          command: npm install # Ensure Cypress is installed for the test step
       - run:
           name: Run Cypress Tests
           command: npx cypress run
