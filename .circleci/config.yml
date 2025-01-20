@@ -1,54 +1,11 @@
-version: 2.1
-
-executors:
-  node-executor:
-    docker:
-      - image: cimg/node:22.11-browsers
-    working_directory: ~/project
-
-jobs:
-  install_dependencies:
-    executor: node-executor
-    steps:
-      - checkout
-      - run:
-          name: Install Dependencies
-          command: npm ci
-
-  start_dev_server:
-    executor: node-executor
-    steps:
-      - checkout
-      - run:
-          name: Install Dependencies
-          command: npm ci
-      - run:
-          name: Start Dev Server
-          command: npm run dev &
-      - run:
-          name: Wait for Dev Server to Start
-          command: |
-            until curl -s http://localhost:3000 > /dev/null; do
-              echo "Waiting for server to start..."
-              sleep 2
-            done
-
-  test:
-    executor: node-executor
-    steps:
-      - checkout
-      - run:
-          name: Run Cypress Tests
-          command: npx cypress run
-
-workflows:
-  version: 2
-  ci_pipeline:
+version: 2.1 # Use 2.1 to make use of orbs and other features
+orbs: # An orb is a reusable package of CircleCI configuration that you may share
+  # across projects, enabling you to create encapsulated, parameterized commands, jobs, and
+  # executors that can be used across multiple projects.
+  cypress: cypress-io/cypress@3.1.1
+workflows: # Workflows are a declarative way to orchestrate jobs and their run order.
+  build:
     jobs:
-      - install_dependencies
-      - start_dev_server:
-          requires:
-            - install_dependencies
-      - test:
-          requires:
-            - start_dev_server
+      - cypress/run: # Run the cypress/run job from the cypress orb
+          cypress-command: npx cypress run --headless # Run the cypress run command in headless mode
+          start-command: npm start
