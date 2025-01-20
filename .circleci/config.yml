@@ -2,15 +2,23 @@ version: 2.1
 orbs:
   cypress: cypress-io/cypress@3.1.1
 
-executors:
-  node-executor:
+jobs:
+  setup-node:
     docker:
-      - image: cimg/node:22.11-browsers # Use a compatible Node.js Docker image
+      - image: cimg/node:22.11-browsers # Use a compatible Node.js image
+    steps:
+      - checkout
+      - run:
+          name: Install Dependencies
+          command: npm install
+      - run:
+          name: Verify Node.js Version
+          command: node -v
 
 workflows:
   build:
     jobs:
+      - setup-node
       - cypress/run:
-          executor: node-executor # Use the updated Node executor
           cypress-command: npx cypress run --headless
           start-command: npm run dev
