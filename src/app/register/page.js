@@ -6,6 +6,7 @@ export default function RegisterPage() {
     const userData = new FormData(event.target);
     const data = Object.fromEntries(userData.entries());  // Turns the User's input data into an object where the key == the form name and the value == the User's input
 
+    // Confirm the passwords match
     if (data.password !== data.passwordConfirmation) {
       alert("Passwords must match!");
       return;
